@@ -92,30 +92,6 @@ class _UploadPageState extends State<UploadPage> {
     });
   }
 
-  // void _showNominationEndedDialog() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text('Nomination Session Ended'),
-  //         content: Text(
-  //             'The nomination session has ended. You will be redirected to the homepage.'),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Close the dialog
-  //               Navigator.of(context).pushReplacement(
-  //                 MaterialPageRoute(builder: (context) => VotePage()),
-  //               );
-  //             },
-  //             child: Text('OK'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-
   Future<void> _checkSessionStatus() async {
     final isWithin = await _sessionService.isWithinNominationSession();
     setState(() {

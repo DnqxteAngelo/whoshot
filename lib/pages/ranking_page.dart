@@ -83,7 +83,7 @@ class _RankingPageState extends State<RankingPage> {
         final Map<String, dynamic> data = json.decode(response.body);
         if (data['status'] == 'success') {
           final now = DateTime.now();
-          final oneHourAgo = now.subtract(Duration(days: 10));
+          final oneHourAgo = now.subtract(Duration(hours: 1));
           setState(() {
             votes = (data['data'] as List)
                 .map((json) => Votes.fromJson(json))

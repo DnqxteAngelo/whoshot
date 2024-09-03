@@ -85,7 +85,7 @@ class _VotePageState extends State<VotePage> {
         final Map<String, dynamic> data = json.decode(response.body);
         if (data['status'] == 'success') {
           final now = DateTime.now();
-          final oneHourAgo = now.subtract(Duration(days: 10));
+          final oneHourAgo = now.subtract(Duration(hours: 1));
           setState(() {
             nominees = (data['data'] as List)
                 .map((json) => Nominees.fromJson(json))
