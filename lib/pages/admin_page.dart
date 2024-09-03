@@ -1,8 +1,11 @@
-// ignore_for_file: prefer_const_constructors, unused_field, library_private_types_in_public_api
+// ignore_for_file: avoid_print, prefer_const_constructors, unused_field
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:whoshot/models/session.dart';
 import 'package:whoshot/session/session_service.dart';
 import 'dart:async';
+import 'package:http/http.dart' as http;
 
 class AdminPage extends StatefulWidget {
   const AdminPage({Key? key}) : super(key: key);
@@ -13,6 +16,7 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> {
   final SessionService _sessionService = SessionService();
+  List<Session> sessions = [];
   DateTime? _nominationStartTime;
   DateTime? _nominationEndTime;
   DateTime? _votingStartTime;
@@ -49,62 +53,178 @@ class _AdminPageState extends State<AdminPage> {
     });
   }
 
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   Future<void> _startNominationSession() async {
     final now = DateTime.now();
     final endTime = now.add(Duration(minutes: 1));
-    await _sessionService.saveNominationTimes(now, endTime);
-    setState(() {
-      _nominationStartTime = now;
-      _nominationEndTime = endTime;
-    });
-    _startTimer();
+    Map<String, dynamic> data = {
+      'nomination_start': now.toIso8601String(),
+      'nomination_end': endTime.toIso8601String(),
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost/whoshot/lib/api/session.php'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'operation': 'nominationSession',
+          'json': jsonEncode(data),
+        },
+      );
+      print('Server response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        if (responseData['status'] == 'success') {
+          // await _sessionService.saveNominationTimes(now, endTime);
+          setState(() {
+            _nominationStartTime = now;
+            _nominationEndTime = endTime;
+          });
+          _startTimer();
+        } else {
+          _showErrorSnackBar(
+              responseData['message'] ?? 'Failed to start session.');
+        }
+      } else {
+        _showErrorSnackBar('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      _showErrorSnackBar('An error occurred: $e');
+      print(e);
+    }
   }
 
   Future<void> _startVotingSession() async {
     final now = DateTime.now();
-    final endTime = now.add(Duration(seconds: 10));
-    await _sessionService.saveVotingTimes(now, endTime);
-    setState(() {
-      _votingStartTime = now;
-      _votingEndTime = endTime;
-    });
-    _startTimer();
+    final endTime = now.add(Duration(minutes: 1));
+    Map<String, dynamic> data = {
+      'voting_start': now.toIso8601String(),
+      'voting_end': endTime.toIso8601String(),
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost/whoshot/lib/api/session.php'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'operation': 'votingSession',
+          'json': jsonEncode(data),
+        },
+      );
+      print('Server response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        if (responseData['status'] == 'success') {
+          // await _sessionService.saveVotingTimes(now, endTime);
+          setState(() {
+            _votingStartTime = now;
+            _votingEndTime = endTime;
+          });
+          _startTimer();
+        } else {
+          _showErrorSnackBar(
+              responseData['message'] ?? 'Failed to start session.');
+        }
+      } else {
+        _showErrorSnackBar('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      _showErrorSnackBar('An error occurred: $e');
+      print(e);
+    }
   }
 
-  // Future<void> _endNominationSessionAndStartVoting() async {
-  //   await _endNominationSession();
-  //   _startVotingSession();
-  // }
-
   Future<void> _endNominationSession() async {
-    await _sessionService.saveNominationTimes(null, null);
-    setState(() {
-      _nominationStartTime = null;
-      _nominationEndTime = null;
-    });
+    Map<String, dynamic> data = {
+      'nomination_start': null,
+      'nomination_end': null,
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost/whoshot/lib/api/session.php'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'operation': 'nominationSession',
+          'json': jsonEncode(data),
+        },
+      );
+      print('Server response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        if (responseData['status'] == 'success') {
+          // await _sessionService.saveNominationTimes(null, null);
+          setState(() {
+            _nominationStartTime = null;
+            _nominationEndTime = null;
+          });
+          _startTimer();
+        } else {
+          _showErrorSnackBar(
+              responseData['message'] ?? 'Failed to start session.');
+        }
+      } else {
+        _showErrorSnackBar('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      _showErrorSnackBar('An error occurred: $e');
+      print(e);
+    }
   }
 
   Future<void> _endVotingSession() async {
-    await _sessionService.saveVotingTimes(null, null);
-    setState(() {
-      _votingStartTime = null;
-      _votingEndTime = null;
-    });
+    Map<String, dynamic> data = {
+      'voting_start': null,
+      'voting_end': null,
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost/whoshot/lib/api/session.php'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'operation': 'votingSession',
+          'json': jsonEncode(data),
+        },
+      );
+      print('Server response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        if (responseData['status'] == 'success') {
+          // await _sessionService.saveVotingTimes(null, null);
+          setState(() {
+            _votingStartTime = null;
+            _votingEndTime = null;
+          });
+          _startTimer();
+        } else {
+          _showErrorSnackBar(
+              responseData['message'] ?? 'Failed to start session.');
+        }
+      } else {
+        _showErrorSnackBar('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      _showErrorSnackBar('An error occurred: $e');
+      print(e);
+    }
   }
 
   void _startTimer() {
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (!mounted) {
-        // If the widget is not mounted, stop the timer.
         _timer?.cancel();
         return;
       }
-
-      // if (_nominationEndTime != null &&
-      //     DateTime.now().isAfter(_nominationEndTime!) &&
-      //     _votingStartTime == null) {
-      //   _endNominationSessionAndStartVoting();
-      // }
 
       if ((_nominationEndTime == null ||
               DateTime.now().isAfter(_nominationEndTime!)) &&
@@ -122,7 +242,10 @@ class _AdminPageState extends State<AdminPage> {
     final now = DateTime.now();
     final difference = _nominationEndTime!.difference(now);
 
-    if (difference.isNegative) return "Session Ended";
+    if (difference.isNegative) {
+      _endNominationSession();
+      return "Session Ended";
+    }
 
     final hours = difference.inHours;
     final minutes = difference.inMinutes % 60;
@@ -137,7 +260,10 @@ class _AdminPageState extends State<AdminPage> {
     final now = DateTime.now();
     final difference = _votingEndTime!.difference(now);
 
-    if (difference.isNegative) return "Session Ended";
+    if (difference.isNegative) {
+      _endVotingSession();
+      return "Session Ended";
+    }
 
     final hours = difference.inHours;
     final minutes = difference.inMinutes % 60;

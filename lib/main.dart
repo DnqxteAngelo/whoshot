@@ -49,6 +49,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final SessionService _sessionService = SessionService();
+  // final AdminPage _adminPage = AdminPage();
   bool _isNominationSessionActive = false;
   bool _isVotingSessionActive = false;
 
