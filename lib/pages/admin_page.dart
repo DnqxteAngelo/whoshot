@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:whoshot/models/session.dart';
+import 'package:whoshot/pages/display_page.dart';
 import 'package:whoshot/session/session_service.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
@@ -314,6 +315,18 @@ class _AdminPageState extends State<AdminPage> {
             ElevatedButton(
               onPressed: _endVotingSession,
               child: Text('End Voting Session'),
+            ),
+            SizedBox(
+              height: 50,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DisplayPage()),
+                );
+              },
+              child: Text('Nominees Display'),
             ),
           ],
         ),

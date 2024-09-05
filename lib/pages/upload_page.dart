@@ -1,13 +1,18 @@
 // ignore_for_file: library_private_types_in_public_api, prefer_const_constructors, prefer_const_literals_to_create_immutables, use_build_context_synchronously, avoid_print, no_leading_underscores_for_local_identifiers
 
 import 'dart:async';
-import 'dart:typed_data';
+// import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:whoshot/main.dart';
+import 'package:whoshot/pages/camera_page.dart';
 import 'package:whoshot/session/session_service.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 import 'dart:convert';
 
 class UploadPage extends StatefulWidget {
@@ -22,6 +27,7 @@ class _UploadPageState extends State<UploadPage> {
   bool _isLoading = false;
   String _gender = 'Male';
   final TextEditingController _nameController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
   Uint8List? _imageBytes;
 
   bool _isWithinTimeLimit = false;
@@ -99,25 +105,147 @@ class _UploadPageState extends State<UploadPage> {
     });
   }
 
-  Future<void> selectImage() async {
-    try {
-      FilePickerResult? result =
-          await FilePicker.platform.pickFiles(allowMultiple: false);
+  Future<void> _showImageSourceDialog() async {
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            side: BorderSide(
+                color: Colors.green[600]!, width: 2), // Green border with width
+            borderRadius: BorderRadius.circular(12.0), // Rounded corners
+          ),
+          title: Text(
+            'Choose Image Source',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.photo_library),
+                title: Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(context); // Close the dialog
+                  selectImageFromGallery();
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.camera_alt),
+                title: Text('Use Camera'),
+                onTap: () {
+                  Navigator.pop(context); // Close the dialog
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CameraPage(
+                        onImageSelected: (imageData) {
+                          setState(() {
+                            _imageBytes = imageData;
+                          });
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-      if (result != null) {
-        final PlatformFile file = result.files.first;
-        final Uint8List? imageData = file.bytes;
-        setState(() {
-          _imageBytes = imageData;
-        });
+  Future<void> _requestCameraPermission() async {
+    PermissionStatus status = await Permission.camera.request();
+    if (status.isGranted) {
+      // Permission is granted, proceed with camera access
+    } else if (status.isDenied) {
+      // Permission is denied, show a dialog or message to the user
+    } else if (status.isPermanentlyDenied) {
+      // Permission is permanently denied, you may open the app settings
+      openAppSettings();
+    }
+  }
+
+  Future<void> selectImageFromCamera() async {
+    await _requestCameraPermission();
+
+    try {
+      if (!kIsWeb) {
+        final XFile? photo =
+            await _picker.pickImage(source: ImageSource.camera);
+
+        if (photo != null) {
+          final Uint8List imageData = await photo.readAsBytes();
+          setState(() {
+            _imageBytes = imageData;
+          });
+        } else {
+          print("No image captured");
+        }
       } else {
-        // User canceled the picker
-        print("No file selected");
+        print("Camera feature is not supported on web.");
+        // You may want to handle the case for web differently or use a different method
+        // such as a file picker with media types.
+      }
+    } catch (e) {
+      print("Error capturing image: $e");
+    }
+  }
+
+  Future<void> selectImageFromGallery() async {
+    try {
+      if (kIsWeb) {
+        final XFile? image =
+            await _picker.pickImage(source: ImageSource.gallery);
+        if (image != null) {
+          final Uint8List imageData = await image.readAsBytes();
+          setState(() {
+            _imageBytes = imageData;
+          });
+        } else {
+          print("No image selected");
+        }
+      } else {
+        FilePickerResult? result =
+            await FilePicker.platform.pickFiles(allowMultiple: false);
+        if (result != null) {
+          final PlatformFile file = result.files.first;
+          final Uint8List? imageData = file.bytes;
+          setState(() {
+            _imageBytes = imageData;
+          });
+        } else {
+          print("No file selected");
+        }
       }
     } catch (e) {
       print("Error selecting image: $e");
     }
   }
+
+  // Future<void> selectImage() async {
+  //   try {
+  //     FilePickerResult? result =
+  //         await FilePicker.platform.pickFiles(allowMultiple: false);
+
+  //     if (result != null) {
+  //       final PlatformFile file = result.files.first;
+  //       final Uint8List? imageData = file.bytes;
+  //       setState(() {
+  //         _imageBytes = imageData;
+  //       });
+  //     } else {
+  //       // User canceled the picker
+  //       print("No file selected");
+  //     }
+  //   } catch (e) {
+  //     print("Error selecting image: $e");
+  //   }
+  // }
 
   Future<void> _addNominee() async {
     if (!_isWithinTimeLimit) {
@@ -343,7 +471,7 @@ class _UploadPageState extends State<UploadPage> {
                           GestureDetector(
                             onTap: () {
                               print("GestureDetector tapped");
-                              selectImage();
+                              _showImageSourceDialog();
                             }, // Handle image upload
                             child: FadeInUp(
                               duration: Duration(milliseconds: 1500),
