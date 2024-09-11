@@ -74,6 +74,24 @@ class _LandingPageState extends State<LandingPage> {
     }
   }
 
+  Future<void> _handleRankingButtonPressed() async {
+    await _checkSessionStatus();
+
+    if (_isVotingSessionActive) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => RankingPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              "The ranking page is only available during voting sessions."),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -276,13 +294,7 @@ class _LandingPageState extends State<LandingPage> {
                               child: Padding(
                                 padding: EdgeInsets.all(buttonPadding),
                                 child: ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => RankingPage()),
-                                    );
-                                  },
+                                  onPressed: _handleRankingButtonPressed,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.green.shade600,
                                     // side: BorderSide(

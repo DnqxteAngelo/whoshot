@@ -1,14 +1,16 @@
-// ignore_for_file: prefer_const_constructors, avoid_print, sort_child_properties_last
+// ignore_for_file: prefer_const_constructors, avoid_print, sort_child_properties_last, unused_local_variable, prefer_const_literals_to_create_immutables
 
 import 'dart:async';
 
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:whoshot/models/votes.dart';
 import 'package:whoshot/session/session_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class RankingPage extends StatefulWidget {
   const RankingPage({Key? key}) : super(key: key);
@@ -17,9 +19,12 @@ class RankingPage extends StatefulWidget {
   _RankingPageState createState() => _RankingPageState();
 }
 
-class _RankingPageState extends State<RankingPage> {
+class _RankingPageState extends State<RankingPage>
+    with TickerProviderStateMixin {
   final SessionService _sessionService = SessionService();
   List<Votes> votes = [];
+  late WebSocketChannel _channel;
+  Map<String, AnimationController> _animationControllers = {};
 
   Timer? _timer;
   DateTime? _votingEndTime;
@@ -31,6 +36,70 @@ class _RankingPageState extends State<RankingPage> {
     _getVotingRemainingTime();
     _startTimer();
     fetchVotes();
+    _initWebSocket();
+  }
+
+  void _initWebSocket() {
+    try {
+      _channel = IOWebSocketChannel.connect('ws://10.0.2.2:8080');
+      _channel.stream.listen(
+        (message) {
+          final data = json.decode(message);
+          if (data['type'] == 'vote_update') {
+            _handleVoteUpdate(data['vote']);
+          }
+        },
+        onError: (error) {
+          print('WebSocket error: $error');
+        },
+        onDone: () {
+          print('WebSocket connection closed');
+          // Optionally implement reconnection logic here
+        },
+      );
+    } catch (e) {
+      print('WebSocket connection failed: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _channel.sink.close();
+    super.dispose();
+  }
+
+  void _handleVoteUpdate(Map<String, dynamic> voteData) {
+    final updatedVote = Votes.fromJson(voteData);
+    setState(() {
+      final index = votes.indexWhere((v) => v.id == updatedVote.id);
+      if (index != -1) {
+        final oldPosition = votes.indexOf(votes[index]);
+        votes[index] = updatedVote;
+        votes.sort((a, b) => b.totalVotes!.compareTo(a.totalVotes!));
+        final newPosition = votes.indexOf(updatedVote);
+        if (oldPosition != newPosition) {
+          _animateRankChange(
+              updatedVote.id!.toString(), oldPosition, newPosition);
+        }
+      } else {
+        votes.add(updatedVote);
+        votes.sort((a, b) => b.totalVotes!.compareTo(a.totalVotes!));
+      }
+    });
+  }
+
+  void _animateRankChange(String id, int oldPosition, int newPosition) {
+    if (_animationControllers.containsKey(id)) {
+      _animationControllers[id]!.dispose();
+    }
+    _animationControllers[id] = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _animationControllers[id]!.forward().then((_) {
+      _animationControllers[id]!.dispose();
+      _animationControllers.remove(id);
+    });
   }
 
   Future<void> _loadVotingTimes() async {
@@ -83,13 +152,14 @@ class _RankingPageState extends State<RankingPage> {
         final Map<String, dynamic> data = json.decode(response.body);
         if (data['status'] == 'success') {
           final now = DateTime.now();
-          final oneHourAgo = now.subtract(Duration(hours: 1));
+          final oneHourAgo = now.subtract(Duration(days: 60));
           setState(() {
             votes = (data['data'] as List)
                 .map((json) => Votes.fromJson(json))
                 .where((vote) =>
                     vote.time != null && vote.time!.isAfter(oneHourAgo))
                 .toList();
+            votes.sort((a, b) => b.totalVotes!.compareTo(a.totalVotes!));
           });
         } else {
           print('Error fetching nominees: ${data['message']}');
@@ -103,6 +173,16 @@ class _RankingPageState extends State<RankingPage> {
   }
 
   Future<void> getAndAddWinners() async {
+    if (votes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No votes available. Skipping winner announcement.'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     final url = Uri.parse('http://localhost/whoshot/lib/api/results.php');
     try {
       final response = await http.post(
@@ -118,10 +198,10 @@ class _RankingPageState extends State<RankingPage> {
           final maleWinner = data['male']['nomination_name'];
           final maleVotes = data['male']['total_votes'];
           final femaleWinner = data['female']['nomination_name'];
-          final femaleVotes = data['male']['total_votes'];
+          final femaleVotes = data['female']['total_votes'];
 
           // Show a dialog with the winners
-          _showWinnersDialog(maleWinner, femaleWinner, maleVotes, femaleVotes);
+          _showVotingEndedDialog();
         } else {
           print('Error adding winners to results: ${data['message']}');
         }
@@ -133,33 +213,32 @@ class _RankingPageState extends State<RankingPage> {
     }
   }
 
-  void _showWinnersDialog(
-      String maleWinner, String femaleWinner, int maleVotes, int femaleVotes) {
+  void _showVotingEndedDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Winners Announced!'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.green.shade600, width: 3),
+          ),
+          backgroundColor: Colors.white,
+          title: Text(
+            'Voting Period Ended',
+            style: TextStyle(color: Colors.green.shade600),
+          ),
           content: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hottest Male: $maleWinner',
+                'The voting period has ended.',
                 style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                'Total Votes: $maleVotes',
-                style: TextStyle(fontWeight: FontWeight.w600),
               ),
               SizedBox(height: 10),
               Text(
-                'Hottest Female: $femaleWinner',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                'Total Votes: $femaleVotes',
+                'The host will announce the winners soon.',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ],
@@ -169,7 +248,7 @@ class _RankingPageState extends State<RankingPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: Text('OK', style: TextStyle(color: Colors.green.shade600)),
             ),
           ],
         );
@@ -403,49 +482,62 @@ class _RankingPageState extends State<RankingPage> {
                 } else {
                   rankingIcon = null; // No icon for places greater than 3
                 }
-                return FadeInUp(
-                  duration: Duration(
-                      milliseconds:
-                          500 + (index * 100)), // Delay each item slightly
-                  child: Card(
-                    margin:
-                        EdgeInsets.symmetric(vertical: 15.0, horizontal: 16.0),
-                    // elevation: 8.0, // Add shadow for better appearance
-                    child: Container(
-                      height: 120, // Adjust height of the Card
-                      padding:
-                          EdgeInsets.all(8.0), // Add padding inside the Card
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundImage: vote.imageUrl != null
-                                ? NetworkImage(vote.imageUrl!)
-                                : null, // Use network image if available
-                            radius: 40, // Size of the avatar
-                          ),
-                          SizedBox(width: 30), // Space between avatar and text
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  vote.name ?? '',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                Text('Votes: ${vote.totalVotes}'),
-                              ],
+                return AnimatedBuilder(
+                    animation: _animationControllers[vote.id!] ??
+                        AlwaysStoppedAnimation(0.0),
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(
+                            0, _animationControllers[vote.id!]?.value ?? 0),
+                        child: FadeInUp(
+                          duration: Duration(
+                              milliseconds: 500 +
+                                  (index * 100)), // Delay each item slightly
+                          child: Card(
+                            margin: EdgeInsets.symmetric(
+                                vertical: 15.0, horizontal: 16.0),
+                            // elevation: 8.0, // Add shadow for better appearance
+                            child: Container(
+                              height: 120, // Adjust height of the Card
+                              padding: EdgeInsets.all(
+                                  8.0), // Add padding inside the Card
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    child: Icon(Icons.person,
+                                        size: 40, color: Colors.white),
+                                    backgroundColor: Colors.grey,
+                                    radius: 40, // Size of the avatar
+                                  ),
+                                  SizedBox(
+                                      width:
+                                          30), // Space between avatar and text
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          '?' * (vote.name?.length ?? 0),
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text('Votes: ${vote.totalVotes}'),
+                                      ],
+                                    ),
+                                  ),
+                                  if (rankingIcon != null) rankingIcon,
+                                  SizedBox(width: 30),
+                                ],
+                              ),
                             ),
                           ),
-                          if (rankingIcon != null) rankingIcon,
-                          SizedBox(width: 30),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
+                        ),
+                      );
+                    });
               },
             ),
           ),

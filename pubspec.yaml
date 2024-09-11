@@ -50,6 +50,7 @@ dependencies:
   camera_web: ^0.3.4
   marquee: ^2.2.3
   marqueer: ^1.4.5
+  web_socket_channel: ^2.4.0
  
 dev_dependencies:
   flutter_test:

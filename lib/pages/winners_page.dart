@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -77,7 +79,31 @@ class _WinnersPageState extends State<WinnersPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20.0),
+              padding: const EdgeInsets.only(
+                left: 20.0,
+                top: 20.0,
+                right: 20.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  FadeInRight(
+                    duration: Duration(milliseconds: 1000),
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10.0),
               child: FadeInDown(
                 duration: Duration(milliseconds: 1000),
                 child: Text(
@@ -118,7 +144,8 @@ class _WinnersPageState extends State<WinnersPage> {
               child: ListView.builder(
                 itemCount: _winners.length,
                 itemBuilder: (context, index) {
-                  final winnerPair = _winners[index];
+                  final winnerPair = _winners[
+                      _winners.length - 1 - index]; // Reverse the order
                   return Card(
                     margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                     child: Column(

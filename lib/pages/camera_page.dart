@@ -99,90 +99,109 @@ class _CameraPageState extends State<CameraPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Set background color to black
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0, top: 20.0, right: 20.0),
-            child: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Icon(
-                Icons.arrow_back,
-                color: Colors.white, // Set icon color to white
-              ),
-            ),
-          ),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _cameras == null
-                    ? Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors
-                              .white), // Set progress indicator color to white
-                        ),
-                      )
-                    : FutureBuilder<void>(
-                        future: _initializeControllerFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.done) {
-                            return CameraPreview(_controller);
-                          } else if (snapshot.hasError) {
-                            return Center(
-                              child: Text(
-                                'Error: ${snapshot.error}',
-                                style: TextStyle(
-                                    color: Colors
-                                        .white), // Set text color to white
-                              ),
-                            );
-                          } else {
-                            return Center(
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: constraints.maxWidth * 0.05,
+                    top: constraints.maxHeight * 0.02,
+                    right: constraints.maxWidth * 0.05,
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                      size: constraints.maxWidth * 0.06,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _cameras == null
+                          ? Center(
                               child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors
-                                    .white), // Set progress indicator color to white
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
-                            );
-                          }
-                        },
+                            )
+                          : FutureBuilder<void>(
+                              future: _initializeControllerFuture,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.done) {
+                                  return Container(
+                                    width: double.infinity,
+                                    height: constraints.maxHeight * 0.7,
+                                    child: CameraPreview(_controller),
+                                  );
+                                } else if (snapshot.hasError) {
+                                  return Center(
+                                    child: Text(
+                                      'Error: ${snapshot.error}',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: constraints.maxWidth * 0.04,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                      vertical: constraints.maxHeight * 0.02),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.photo_library),
+                        onPressed: _pickImageFromGallery,
+                        color: Colors.white,
+                        iconSize: constraints.maxWidth * 0.08,
                       ),
+                      SizedBox(width: constraints.maxWidth * 0.05),
+                      IconButton(
+                        icon: Icon(Icons.camera),
+                        onPressed: _takePicture,
+                        iconSize: constraints.maxWidth * 0.12,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: constraints.maxWidth * 0.05),
+                      IconButton(
+                        icon: Icon(Icons.switch_camera),
+                        onPressed: _switchCamera,
+                        color: Colors.white,
+                        iconSize: constraints.maxWidth * 0.08,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: constraints.maxHeight * 0.05),
               ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.photo_library),
-                  onPressed: _pickImageFromGallery,
-                  color: Colors.white, // Set icon color to white
-                ),
-                SizedBox(width: 20),
-                IconButton(
-                  icon: Icon(Icons.camera),
-                  onPressed: _takePicture,
-                  iconSize: 45,
-                  color: Colors.white, // Set icon color to white
-                ),
-                SizedBox(width: 20),
-                IconButton(
-                  icon: Icon(Icons.switch_camera),
-                  onPressed: _switchCamera,
-                  color: Colors.white, // Set icon color to white
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 50),
-        ],
+            );
+          },
+        ),
       ),
     );
   }

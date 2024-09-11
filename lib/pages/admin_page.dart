@@ -103,7 +103,7 @@ class _AdminPageState extends State<AdminPage> {
 
   Future<void> _startVotingSession() async {
     final now = DateTime.now();
-    final endTime = now.add(Duration(minutes: 1));
+    final endTime = now.add(Duration(minutes: 5));
     Map<String, dynamic> data = {
       'voting_start': now.toIso8601String(),
       'voting_end': endTime.toIso8601String(),
@@ -281,54 +281,110 @@ class _AdminPageState extends State<AdminPage> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
         ),
-        title: Text('Admin Page'),
+        title: Text('Admin Page', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green.shade800,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            Text(
-              'Nomination Time Remaining: ${_getNominationRemainingTime()}',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _startNominationSession,
-              child: Text('Start Nomination Session'),
-            ),
-            ElevatedButton(
-              onPressed: _endNominationSession,
-              child: Text('End Nomination Session'),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Voting Time Remaining: ${_getVotingRemainingTime()}',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _startVotingSession,
-              child: Text('Start Voting Session'),
-            ),
-            ElevatedButton(
-              onPressed: _endVotingSession,
-              child: Text('End Voting Session'),
-            ),
-            SizedBox(
-              height: 50,
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DisplayPage()),
-                );
-              },
-              child: Text('Nominees Display'),
-            ),
-          ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.green.shade800,
+              Colors.green.shade600,
+              Colors.green.shade400,
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Nomination Time Remaining: ${_getNominationRemainingTime()}',
+                style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 15),
+              ElevatedButton(
+                onPressed: _startNominationSession,
+                child: Text('Start Nomination Session'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.green.shade800,
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  textStyle:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: _endNominationSession,
+                child: Text('End Nomination Session'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.green.shade800,
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  textStyle:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(height: 30),
+              Text(
+                'Voting Time Remaining: ${_getVotingRemainingTime()}',
+                style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 15),
+              ElevatedButton(
+                onPressed: _startVotingSession,
+                child: Text('Start Voting Session'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.green.shade800,
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  textStyle:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: _endVotingSession,
+                child: Text('End Voting Session'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.green.shade800,
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  textStyle:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(height: 50),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => DisplayPage()),
+                  );
+                },
+                child: Text('Nominees Display'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.green.shade800,
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  textStyle:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

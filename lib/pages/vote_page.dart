@@ -85,7 +85,7 @@ class _VotePageState extends State<VotePage> {
         final Map<String, dynamic> data = json.decode(response.body);
         if (data['status'] == 'success') {
           final now = DateTime.now();
-          final oneHourAgo = now.subtract(Duration(hours: 1));
+          final oneHourAgo = now.subtract(Duration(days: 60));
           setState(() {
             nominees = (data['data'] as List)
                 .map((json) => Nominees.fromJson(json))
@@ -350,66 +350,88 @@ class _VotePageState extends State<VotePage> {
                               final isActive = index == _currentIndex;
                               return Builder(
                                 builder: (context) {
-                                  return AnimatedContainer(
-                                    duration: Duration(milliseconds: 300),
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(20),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey.shade800
-                                              .withOpacity(0.4),
-                                          blurRadius: 10,
-                                          offset: Offset(0, 5),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Container(
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.4,
-                                          margin: EdgeInsets.only(top: 10),
-                                          clipBehavior: Clip.hardEdge,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                          ),
-                                          child: Image.network(
-                                            nominee.imageUrl!,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                        SizedBox(height: 15),
-                                        if (isActive) ...[
-                                          Text(
-                                            nominee.name!,
-                                            style: TextStyle(
-                                              fontSize: MediaQuery.of(context)
-                                                          .size
-                                                          .width >
-                                                      600
-                                                  ? 20
-                                                  : 18,
-                                              fontWeight: FontWeight.w800,
-                                            ),
-                                          ),
-                                          SizedBox(height: 15),
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              _voteForNominee(nominee);
-                                            },
-                                            style: ElevatedButton.styleFrom(
-                                              primary: Colors.green.shade600,
-                                              onPrimary: Colors.white,
-                                            ),
-                                            child: Text("Vote"),
+                                  return Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.8,
+                                    child: AnimatedContainer(
+                                      duration: Duration(milliseconds: 300),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.shade800
+                                                .withOpacity(0.4),
+                                            blurRadius: 10,
+                                            offset: Offset(0, 5),
                                           ),
                                         ],
-                                      ],
+                                      ),
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          children: [
+                                            Container(
+                                              height: MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.4,
+                                              margin: EdgeInsets.only(top: 10),
+                                              clipBehavior: Clip.hardEdge,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: Image.network(
+                                                nominee.imageUrl!,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                            SizedBox(height: 15),
+                                            AnimatedOpacity(
+                                              duration:
+                                                  Duration(milliseconds: 300),
+                                              opacity: isActive ? 1.0 : 0.0,
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                    nominee.name!,
+                                                    style: TextStyle(
+                                                      fontSize:
+                                                          MediaQuery.of(context)
+                                                                      .size
+                                                                      .width >
+                                                                  600
+                                                              ? 20
+                                                              : 18,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 15),
+                                                  ElevatedButton(
+                                                    onPressed: isActive
+                                                        ? () {
+                                                            _voteForNominee(
+                                                                nominee);
+                                                          }
+                                                        : null,
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          Colors.green.shade600,
+                                                      foregroundColor:
+                                                          Colors.white,
+                                                    ),
+                                                    child: Text("Vote"),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            // Add some padding at the bottom to ensure content is visible
+                                            SizedBox(height: 20),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   );
                                 },

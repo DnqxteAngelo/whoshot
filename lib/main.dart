@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, library_private_types_in_public_api, use_build_context_synchronously, avoid_print
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, library_private_types_in_public_api, use_build_context_synchronously, avoid_print, sized_box_for_whitespace
 import 'dart:math';
 
 import 'package:animate_do/animate_do.dart';
@@ -88,6 +88,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final buttonPadding = screenSize.width * 0.03;
+    final isLargeScreen = screenSize.width > 600;
 
     return Scaffold(
       body: Container(
@@ -124,7 +125,8 @@ class _HomePageState extends State<HomePage> {
                         "C I T E",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: screenSize.width * 0.15,
+                          fontSize:
+                              isLargeScreen ? 60 : screenSize.width * 0.15,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -136,7 +138,7 @@ class _HomePageState extends State<HomePage> {
                       "Spotlight",
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: screenSize.width * 0.1,
+                        fontSize: isLargeScreen ? 40 : screenSize.width * 0.1,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -147,7 +149,7 @@ class _HomePageState extends State<HomePage> {
                       "Who got the best face?",
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: screenSize.width * 0.05,
+                        fontSize: isLargeScreen ? 20 : screenSize.width * 0.05,
                         fontWeight: FontWeight.w300,
                       ),
                     ),
@@ -167,148 +169,162 @@ class _HomePageState extends State<HomePage> {
                       topRight: Radius.circular(60),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: Column(
-                      children: [
-                        SizedBox(height: 10),
-                        FadeInLeft(
-                          duration: Duration(milliseconds: 1100),
-                          child: Text(
-                            "Login to your account",
-                            style: TextStyle(
-                              color: Colors.green.shade600,
-                              fontSize: screenSize.width * 0.08,
-                              fontWeight: FontWeight.w500,
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.all(isLargeScreen ? 60.0 : 30.0),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 10),
+                          FadeInLeft(
+                            duration: Duration(milliseconds: 1100),
+                            child: Text(
+                              "Login to your account",
+                              style: TextStyle(
+                                color: Colors.green.shade600,
+                                fontSize: isLargeScreen
+                                    ? 32
+                                    : screenSize.width * 0.08,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: screenSize.height * 0.03),
-                        FadeInUp(
-                          duration: Duration(milliseconds: 1400),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.green.shade200,
-                                  blurRadius: 20,
-                                  offset: Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                          color: Colors.grey.shade200),
-                                    ),
+                          SizedBox(height: screenSize.height * 0.03),
+                          FadeInUp(
+                            duration: Duration(milliseconds: 1400),
+                            child: Container(
+                              width: isLargeScreen
+                                  ? screenSize.width * 0.5
+                                  : double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.green.shade200,
+                                    blurRadius: 20,
+                                    offset: Offset(0, 10),
                                   ),
-                                  child: TextField(
-                                    decoration: InputDecoration(
-                                      labelText: "Student ID #",
-                                      labelStyle: TextStyle(
-                                          color: Colors.green.shade600),
-                                      hintText: "e.g. 00-0000-000000",
-                                      hintStyle: TextStyle(color: Colors.grey),
-                                      border: InputBorder.none,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: screenSize.height * 0.08),
-                        FadeInUp(
-                          duration: Duration(milliseconds: 1400),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildUnclickableTextField(
-                                  firstNumber.toString()),
-                              Text(
-                                "+",
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 22,
-                                ),
+                                ],
                               ),
-                              _buildUnclickableTextField(
-                                  secondNumber.toString()),
-                              Text(
-                                "=",
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 22,
-                                ),
-                              ),
-                              SizedBox(
-                                width: 50,
-                                child: TextField(
-                                  textAlign: TextAlign.center,
-                                  controller: answerController,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: borderColor,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        bottom: BorderSide(
+                                            color: Colors.grey.shade200),
                                       ),
                                     ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                          color: borderColor,
-                                          width:
-                                              2.0), // Color and width when focused
+                                    child: TextField(
+                                      decoration: InputDecoration(
+                                        labelText: "Student ID #",
+                                        labelStyle: TextStyle(
+                                            color: Colors.green.shade600),
+                                        hintText: "e.g. 00-0000-000000",
+                                        hintStyle:
+                                            TextStyle(color: Colors.grey),
+                                        border: InputBorder.none,
+                                      ),
                                     ),
                                   ),
-                                  onChanged: (value) {
-                                    validateAnswer(); // Validate answer when text changes
-                                  },
-                                ),
+                                ],
                               ),
-                              IconButton(
-                                color: Colors.green.shade600,
-                                onPressed: generateRandomNumbers,
-                                icon: Icon(
-                                  Icons.replay,
-                                  // color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: screenSize.height * 0.04),
-                        FadeInUp(
-                          duration: Duration(milliseconds: 1500),
-                          child: MaterialButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => LandingPage()),
-                              );
-                            },
-                            height: 50,
-                            color: Colors.green.shade800,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50),
                             ),
+                          ),
+                          SizedBox(height: screenSize.height * 0.08),
+                          FadeInUp(
+                            duration: Duration(milliseconds: 1400),
                             child: Center(
-                              child: Text(
-                                "Login",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
+                              child: Wrap(
+                                alignment: WrapAlignment.center,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 10,
+                                runSpacing: 10,
+                                children: [
+                                  _buildUnclickableTextField(
+                                      firstNumber.toString()),
+                                  Text(
+                                    "+",
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 22,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  _buildUnclickableTextField(
+                                      secondNumber.toString()),
+                                  Text("=",
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 22,
+                                      ),
+                                      textAlign: TextAlign.center),
+                                  SizedBox(
+                                    width: 50,
+                                    child: TextField(
+                                      textAlign: TextAlign.center,
+                                      controller: answerController,
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: borderColor,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: borderColor, width: 2.0),
+                                        ),
+                                      ),
+                                      onChanged: (value) {
+                                        validateAnswer();
+                                      },
+                                    ),
+                                  ),
+                                  IconButton(
+                                    color: Colors.green.shade600,
+                                    onPressed: generateRandomNumbers,
+                                    icon: Icon(
+                                      Icons.replay,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                        ),
-                        // SizedBox(height: screenSize.height * 0.03),
-                      ],
+                          SizedBox(height: screenSize.height * 0.04),
+                          FadeInUp(
+                            duration: Duration(milliseconds: 1500),
+                            child: Container(
+                              width: isLargeScreen
+                                  ? screenSize.width * 0.3
+                                  : double.infinity,
+                              child: MaterialButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => LandingPage()),
+                                  );
+                                },
+                                height: 50,
+                                color: Colors.green.shade800,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "Login",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -323,9 +339,8 @@ class _HomePageState extends State<HomePage> {
   // Helper method to build a read-only text field
   Widget _buildUnclickableTextField(String label) {
     return GestureDetector(
-      onTap: null, // Make the text field unclickable
+      onTap: null,
       child: AbsorbPointer(
-        // Prevent interactions
         child: SizedBox(
           width: 50,
           child: TextField(
