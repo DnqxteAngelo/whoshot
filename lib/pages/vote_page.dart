@@ -12,7 +12,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class VotePage extends StatefulWidget {
-  const VotePage({Key? key}) : super(key: key);
+  final int userId;
+
+  VotePage({
+    required this.userId,
+  });
 
   @override
   _VotePageState createState() => _VotePageState();
@@ -70,6 +74,11 @@ class _VotePageState extends State<VotePage> {
       }
 
       setState(() {});
+
+      if (_getVotingRemainingTime() == "Ended") {
+        _timer?.cancel();
+        Navigator.pop(context);
+      }
     });
   }
 
@@ -85,7 +94,7 @@ class _VotePageState extends State<VotePage> {
         final Map<String, dynamic> data = json.decode(response.body);
         if (data['status'] == 'success') {
           final now = DateTime.now();
-          final oneHourAgo = now.subtract(Duration(days: 60));
+          final oneHourAgo = now.subtract(Duration(hours: 1));
           setState(() {
             nominees = (data['data'] as List)
                 .map((json) => Nominees.fromJson(json))
@@ -109,12 +118,12 @@ class _VotePageState extends State<VotePage> {
     // final url = Uri.parse('http://localhost/whoshot/lib/api/vote.php');
     try {
       // Get the user's IP address (for now, using placeholder '127.0.0.1')
-      String userIp = await _getUserIp();
+      int userId = widget.userId;
 
       Map<String, dynamic> data = {
         'nominationId': nominee.id,
         'time': DateTime.now().toIso8601String(),
-        'voterIp': userIp,
+        'userId': userId,
       };
 
       final response = await http.post(
@@ -144,35 +153,35 @@ class _VotePageState extends State<VotePage> {
     }
   }
 
-  Future<String> _getUserIp() async {
-    final url = Uri.parse('https://api.ipify.org?format=json');
+  // Future<String> _getUserIp() async {
+  //   final url = Uri.parse('https://api.ipify.org?format=json');
 
-    try {
-      final response = await http.get(url);
+  //   try {
+  //     final response = await http.get(url);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['ip'];
-      } else {
-        print('Failed to get IP address: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching IP address: $e');
-    }
-    return '127.0.0.2';
-    // try {
-    //   for (var interface in await NetworkInterface.list()) {
-    //     for (var addr in interface.addresses) {
-    //       if (addr.type == InternetAddressType.IPv4) {
-    //         return addr.address; // Returns the first IPv4 address found
-    //       }
-    //     }
-    //   }
-    // } catch (e) {
-    //   print('Error getting user IP: $e');
-    // }
-    // return '127.0.0.1'; // Default fallback
-  }
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       return data['ip'];
+  //     } else {
+  //       print('Failed to get IP address: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     print('Error fetching IP address: $e');
+  //   }
+  //   return '127.0.0.2';
+  //   // try {
+  //   //   for (var interface in await NetworkInterface.list()) {
+  //   //     for (var addr in interface.addresses) {
+  //   //       if (addr.type == InternetAddressType.IPv4) {
+  //   //         return addr.address; // Returns the first IPv4 address found
+  //   //       }
+  //   //     }
+  //   //   }
+  //   // } catch (e) {
+  //   //   print('Error getting user IP: $e');
+  //   // }
+  //   // return '127.0.0.1'; // Default fallback
+  // }
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(

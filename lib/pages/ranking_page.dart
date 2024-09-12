@@ -35,8 +35,8 @@ class _RankingPageState extends State<RankingPage>
     _loadVotingTimes();
     _getVotingRemainingTime();
     _startTimer();
-    fetchVotes();
     _initWebSocket();
+    _startFetchingVotes();
   }
 
   void _initWebSocket() {
@@ -62,9 +62,17 @@ class _RankingPageState extends State<RankingPage>
     }
   }
 
+  void _startFetchingVotes() {
+    // Fetch votes immediately
+    fetchVotes();
+    // Then set up a timer to fetch votes every 5 seconds
+    Timer.periodic(Duration(seconds: 5), (Timer t) => fetchVotes());
+  }
+
   @override
   void dispose() {
     _channel.sink.close();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -152,7 +160,7 @@ class _RankingPageState extends State<RankingPage>
         final Map<String, dynamic> data = json.decode(response.body);
         if (data['status'] == 'success') {
           final now = DateTime.now();
-          final oneHourAgo = now.subtract(Duration(days: 60));
+          final oneHourAgo = now.subtract(Duration(hours: 1));
           setState(() {
             votes = (data['data'] as List)
                 .map((json) => Votes.fromJson(json))

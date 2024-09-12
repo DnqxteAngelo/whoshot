@@ -1,8 +1,10 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, library_private_types_in_public_api, use_build_context_synchronously, avoid_print, sized_box_for_whitespace
 import 'dart:math';
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:whoshot/pages/admin_page.dart';
 import 'package:whoshot/pages/landing_page.dart';
 
 void main() {
@@ -49,15 +51,16 @@ class _HomePageState extends State<HomePage> {
   int secondNumber = 0;
   Color borderColor = Colors.grey; // Default border color
   TextEditingController answerController = TextEditingController();
+  TextEditingController studentIdController = TextEditingController();
 
   // Function to generate random numbers
   void generateRandomNumbers() {
     setState(() {
       Random random = Random();
       firstNumber =
-          random.nextInt(20) + 1; // Generates a number between 0 and 9
+          random.nextInt(20) + 1; // Generates a number between 1 and 20
       secondNumber =
-          random.nextInt(20) + 1; // Generates a number between 0 and 9
+          random.nextInt(20) + 1; // Generates a number between 1 and 20
       borderColor = Colors.grey; // Reset border color when numbers change
       answerController.clear(); // Clear the user input field
     });
@@ -76,6 +79,80 @@ class _HomePageState extends State<HomePage> {
         borderColor = Colors.red.shade600; // Incorrect answer
       }
     });
+  }
+
+  // Function to log in using student ID and correct answer
+  Future<void> login() async {
+    int correctSum = firstNumber + secondNumber;
+    int userAnswer = int.tryParse(answerController.text) ?? -1;
+    String studentId = studentIdController.text;
+
+    Map<String, dynamic> data = {
+      'studentId': studentId,
+    };
+
+    if (userAnswer == correctSum) {
+      try {
+        final response = await http.post(
+          Uri.parse('http://localhost/whoshot/lib/api/auth.php'),
+          body: {
+            'operation': 'login',
+            'json': jsonEncode(data),
+          },
+        );
+
+        print(response.body);
+
+        if (response.statusCode == 200) {
+          // Decode response body as a list
+          List<dynamic> dataList = jsonDecode(response.body);
+
+          // Ensure the list is not empty and has valid data
+          if (dataList.isNotEmpty && dataList[0] is Map<String, dynamic>) {
+            Map<String, dynamic> data = dataList[0];
+
+            // Now handle the student ID as a string
+            if (data['user_studentId'] == '00-0000-000000') {
+              // Navigate to admin page
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AdminPage(
+                    userId: data['user_id'],
+                  ),
+                ),
+              );
+            } else {
+              // Login successful
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LandingPage(
+                    userId: data['user_id'],
+                  ),
+                ),
+              );
+            }
+          } else {
+            // Handle empty or malformed data
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Invalid response from the server')),
+            );
+          }
+        } else {
+          throw Exception('Failed to login');
+        }
+      } catch (e) {
+        print('Error: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An error occurred. Please try again.')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Incorrect answer. Please try again.')),
+      );
+    }
   }
 
   @override
@@ -217,6 +294,7 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                     ),
                                     child: TextField(
+                                      controller: studentIdController,
                                       decoration: InputDecoration(
                                         labelText: "Student ID #",
                                         labelStyle: TextStyle(
@@ -300,13 +378,7 @@ class _HomePageState extends State<HomePage> {
                                   ? screenSize.width * 0.3
                                   : double.infinity,
                               child: MaterialButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => LandingPage()),
-                                  );
-                                },
+                                onPressed: login,
                                 height: 50,
                                 color: Colors.green.shade800,
                                 shape: RoundedRectangleBorder(

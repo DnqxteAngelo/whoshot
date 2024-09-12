@@ -3,7 +3,6 @@
 import 'dart:async';
 // import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
-import 'package:whoshot/main.dart';
 import 'package:whoshot/pages/camera_page.dart';
 import 'package:whoshot/session/session_service.dart';
 import 'package:animate_do/animate_do.dart';
@@ -91,9 +90,7 @@ class _UploadPageState extends State<UploadPage> {
           await _sessionService.isWithinNominationSession();
 
       if (!isNominationActive) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
+        Navigator.pop(context);
       }
     });
   }

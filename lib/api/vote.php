@@ -9,7 +9,7 @@ class Vote {
         $json = json_decode($json, true);
         $nominationId = $json['nominationId'];
         $time = $json['time'];
-        $voterIp = $json['voterIp'];
+        $userId = $json['userId'];
     
         // Retrieve the gender of the nominee being voted for
         $genderSql = "SELECT nomination_gender FROM tbl_nomination WHERE nomination_id = :nominationId";
@@ -25,10 +25,10 @@ class Vote {
         // Check if the IP has already voted for this gender
         $checkSql = "SELECT COUNT(*) FROM tbl_votes 
                      INNER JOIN tbl_nomination ON tbl_votes.vote_nominationId = tbl_nomination.nomination_id
-                     WHERE tbl_nomination.nomination_gender = :gender AND tbl_votes.vote_voterIp = :voterIp";
+                     WHERE tbl_nomination.nomination_gender = :gender AND tbl_votes.vote_userId = :userId";
         $checkStmt = $conn->prepare($checkSql);
         $checkStmt->bindParam(':gender', $gender);
-        $checkStmt->bindParam(':voterIp', $voterIp);
+        $checkStmt->bindParam(':userId', $userId);
         $checkStmt->execute();
     
         $hasVoted = $checkStmt->fetchColumn();
@@ -39,11 +39,11 @@ class Vote {
         }
     
         // Proceed with voting
-        $sql = "INSERT INTO tbl_votes(vote_nominationId, vote_time, vote_voterIp) VALUES(:nominationId, :time, :voterIp)";
+        $sql = "INSERT INTO tbl_votes(vote_nominationId, vote_time, vote_userId) VALUES(:nominationId, :time, :userId)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':nominationId', $nominationId);
         $stmt->bindParam(':time', $time);
-        $stmt->bindParam(':voterIp', $voterIp);
+        $stmt->bindParam(':userId', $userId);
         $stmt->execute();
     
         $returnValue = $stmt->rowCount() > 0 ? json_encode(['status' => 'success', 'message' => 'Vote successfully added.']) : json_encode(['status' => 'error', 'message' => 'Failed to add vote.']);

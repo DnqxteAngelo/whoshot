@@ -32,9 +32,14 @@ class _WinnersPageState extends State<WinnersPage> {
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final DateFormat formatter = DateFormat('h:mm a');
+        final DateTime now = DateTime.now();
+        final DateTime oneDayAgo = now.subtract(Duration(days: 1));
 
         setState(() {
-          _winners = data.map((item) {
+          _winners = data.where((item) {
+            final DateTime resultTime = DateTime.parse(item['result_time']);
+            return resultTime.isAfter(oneDayAgo) && resultTime.isBefore(now);
+          }).map((item) {
             final String resultTime =
                 formatter.format(DateTime.parse(item['result_time']));
             return {

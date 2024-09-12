@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, prefer_const_constructors, unused_field
+// ignore_for_file: avoid_print, prefer_const_constructors, unused_field, library_private_types_in_public_api, use_key_in_widget_constructors, prefer_const_constructors_in_immutables
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -9,7 +9,11 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 
 class AdminPage extends StatefulWidget {
-  const AdminPage({Key? key}) : super(key: key);
+  final int userId;
+
+  AdminPage({
+    required this.userId,
+  });
 
   @override
   _AdminPageState createState() => _AdminPageState();

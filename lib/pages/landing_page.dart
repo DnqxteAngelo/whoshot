@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, library_private_types_in_public_api, use_build_context_synchronously, avoid_print
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:whoshot/pages/admin_page.dart';
 import 'package:whoshot/pages/ranking_page.dart';
 import 'package:whoshot/pages/upload_page.dart';
 import 'package:whoshot/pages/vote_page.dart';
@@ -9,7 +8,11 @@ import 'package:whoshot/pages/winners_page.dart';
 import 'package:whoshot/session/session_service.dart';
 
 class LandingPage extends StatefulWidget {
-  const LandingPage({Key? key}) : super(key: key);
+  final int userId;
+
+  LandingPage({
+    required this.userId,
+  });
 
   @override
   _LandingPageState createState() => _LandingPageState();
@@ -63,7 +66,8 @@ class _LandingPageState extends State<LandingPage> {
     if (_isVotingSessionActive) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => VotePage()),
+        MaterialPageRoute(
+            builder: (context) => VotePage(userId: widget.userId)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -186,25 +190,9 @@ class _LandingPageState extends State<LandingPage> {
                     padding: EdgeInsets.all(buttonPadding),
                     child: Column(
                       children: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => AdminPage()),
-                            );
-                          },
-                          child: Text(
-                            "admin",
-                            style: TextStyle(
-                              color: Colors.white,
-                            ),
-                          ),
+                        SizedBox(
+                          height: 30, // Adjust spacing based on screen height
                         ),
-                        // SizedBox(
-                        //   height: screenSize.height *
-                        //       0.005, // Adjust spacing based on screen height
-                        // ),
                         GridView.count(
                           crossAxisCount: 2,
                           crossAxisSpacing: 4.0,

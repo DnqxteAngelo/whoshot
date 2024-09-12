@@ -81,7 +81,7 @@ class _DisplayPageState extends State<DisplayPage> {
         final Map<String, dynamic> data = json.decode(response.body);
         if (data['status'] == 'success') {
           final now = DateTime.now();
-          final oneHourAgo = now.subtract(Duration(days: 30));
+          final oneHourAgo = now.subtract(Duration(hours: 1));
           setState(() {
             nominees = (data['data'] as List)
                 .map((json) => Nominees.fromJson(json))
@@ -193,8 +193,8 @@ class _DisplayPageState extends State<DisplayPage> {
                           style: TextStyle(fontSize: 18),
                         ),
                         style: ElevatedButton.styleFrom(
-                          primary: Colors.white,
-                          onPrimary: Colors.green.shade800,
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.green.shade800,
                           padding: EdgeInsets.symmetric(
                               horizontal: 40, vertical: 15),
                           shape: RoundedRectangleBorder(

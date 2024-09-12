@@ -1,7 +1,7 @@
 <?php
-$dbservername = "152.42.243.189";
-$dbusername = "notlerio";
-$dbpassword = "!0413Lerio";
+$dbservername = "localhost";
+$dbusername = "root";
+$dbpassword = "";
 $dbname = "db_whoshot";
 
 try {
